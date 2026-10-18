@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0d1224">
+  <title>Prontera Online</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="game"></div>
+  <div id="shade"></div>
+
+  <!-- ================= LOGIN / CHARACTER CREATION ================= -->
+  <div id="login">
+    <div class="win login-box">
+      <div class="win-title"><span>Prontera Online</span></div>
+      <div class="win-body">
+        <p class="tagline">A tiny Ragnarok-inspired browser MMORPG. New name = new character.</p>
+        <div class="row"><label>Name<input id="lg-name" maxlength="16" autocomplete="off" spellcheck="false" placeholder="3-16 letters/numbers"></label>
+        <label>Password<input id="lg-pw" type="password" maxlength="40" placeholder="to protect your character"></label></div>
+        <div class="sect">Choose a class <small>(only used for new characters)</small></div>
+        <div id="lg-classes" class="class-grid"></div>
+        <div id="lg-desc" class="class-desc"></div>
+        <div id="lg-err" class="err"></div>
+        <button id="lg-go" class="btn big">Enter the World</button>
+        <div id="lg-online" class="small muted"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= GAME HUD ================= -->
+  <div id="ui" hidden>
+    <!-- Basic info (HP/SP/EXP) -->
+    <div id="basic" class="win">
+      <div class="win-title"><span>Basic Info</span></div>
+      <div class="win-body basic-body">
+        <div class="basic-top"><canvas id="b-face" width="78" height="72"></canvas>
+          <div class="basic-id"><b id="b-name"></b><div id="b-class" class="small"></div><div id="b-zeny" class="zeny"></div></div></div>
+        <div class="bar hp"><i id="b-hp"></i><b id="b-hp-t"></b></div>
+        <div class="bar sp"><i id="b-sp"></i><b id="b-sp-t"></b></div>
+        <div class="bar exp"><i id="b-exp"></i><b id="b-exp-t"></b></div>
+        <div class="menu-btns">
+          <button class="btn" data-win="status" title="Character (C)">Stat</button><button class="btn" data-win="equip" title="Equipment (E)">Equip</button>
+          <button class="btn" data-win="inv" title="Inventory (I)">Items</button><button class="btn" data-win="skills" title="Skills (K)">Skill</button>
+          <button class="btn" data-win="party" title="Party (P)">Party</button><button class="btn" data-win="quest" title="Quests (L)">Quest</button>
+          <button class="btn" id="btn-sound" title="Toggle sound (M)">Sound</button>
+        </div>
+        <div id="b-buffs" class="buffs"></div>
+      </div>
+    </div>
+
+    <div id="target" hidden></div>
+
+    <div id="minimap" class="win">
+      <div class="win-title"><span id="mm-name">Map</span><span id="mm-pos" class="small"></span></div>
+      <canvas id="mm" width="140" height="140"></canvas>
+    </div>
+    <div id="quest-track"></div>
+
+    <div id="chat" class="win-lite">
+      <div id="chat-tabs"><button data-f="all" class="on">All</button><button data-f="local">Local</button><button data-f="global">Global</button><button data-f="party">Party</button><button data-f="sys">System</button></div>
+      <div id="chat-log"></div>
+      <div id="chat-row"><select id="chat-ch"><option value="local">Local</option><option value="global">Global</option><option value="party">Party</option></select>
+        <input id="chat-in" maxlength="120" autocomplete="off" placeholder="Enter to chat  (/w name msg, /invite name)"></div>
+    </div>
+
+    <div id="hotbar"></div>
+    <button id="btn-auto" class="btn round" title="Target nearest monster (Tab)">&#9876;</button>
+    <div id="toast"></div>
+
+    <!-- Windows -->
+    <div id="win-status" class="win" hidden><div class="win-title"><span>Character</span><button class="x" data-close>&times;</button></div><div class="win-body" id="status-body"></div></div>
+    <div id="win-inv" class="win" hidden><div class="win-title"><span>Inventory</span><button class="x" data-close>&times;</button></div><div class="win-body" id="inv-body"></div></div>
+    <div id="win-equip" class="win" hidden><div class="win-title"><span>Equipment</span><button class="x" data-close>&times;</button></div><div class="win-body" id="equip-body"></div></div>
+    <div id="win-skills" class="win" hidden><div class="win-title"><span>Skills</span><button class="x" data-close>&times;</button></div><div class="win-body" id="skills-body"></div></div>
+    <div id="win-party" class="win" hidden><div class="win-title"><span>Party</span><button class="x" data-close>&times;</button></div><div class="win-body" id="party-body"></div></div>
+    <div id="win-quest" class="win" hidden><div class="win-title"><span>Quests</span><button class="x" data-close>&times;</button></div><div class="win-body" id="quest-body"></div></div>
+    <div id="win-npc" class="win" hidden><div class="win-title"><span id="npc-title">NPC</span><button class="x" data-close>&times;</button></div><div class="win-body" id="npc-body"></div></div>
+
+    <div id="invite" class="win" hidden><div class="win-title"><span>Party Invitation</span></div><div class="win-body"><div id="invite-text"></div>
+      <div class="btn-row"><button class="btn" id="inv-yes">Accept</button><button class="btn" id="inv-no">Decline</button></div></div></div>
+
+    <div id="death" hidden><div class="win death-box"><div class="win-title"><span>Defeated</span></div><div class="win-body">
+      <p>You have fallen in battle...</p><button class="btn big" id="btn-respawn">Return to Prontera</button></div></div></div>
+    <div id="tip" hidden></div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/vendor/phaser.min.js"></script>
+  <script src="/shared/data.js"></script>
+  <script src="js/sound.js"></script>
+  <script src="js/sprites.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
